@@ -57,8 +57,23 @@ sudo sed -i "s/#PubkeyAuthentication.*/PubkeyAuthentication yes/" $ssh_config_fi
 sudo sed -i "s/#UsePAM.*/UsePAM no/" $ssh_config_file
 sudo sed -i "s/UsePAM.*/UsePAM no/" $ssh_config_file
 sudo mkdir -p ~/.ssh
-sudo ssh-keygen -q -f ~.ssh/id_rsa -N ""
+sudo ssh-keygen -q -f ~/.ssh/id_rsa -N ""
 
+################################################################################
+### firewall config
+################################################################################
+
+sudo iptables -A INPUT -i lo -j ACCEPT
+sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -A INPUT -p tcp -dport 50000 -j ACCEPT
+sudo iptables -A INPUT -p tcp -dport 80 -j ACCEPT
+sudo iptables -A INPUT -p tcp -dport 25 -j ACCEPT
+sudo iptables -P INPUT DROP
+sudo iptables -P FORWARD DROP
+echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
+apt-get install -y iptables-persistent
+sudo sed -i "s/ACCEPT/DROP/" /etc/iptables/rules.v6
 
 
 ################################################################################
