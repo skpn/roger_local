@@ -26,7 +26,6 @@ adduser --gid $sudo_gid --disabled-password --gecos "" sudouser
 echo "sudouser:sudopwd" | chpasswd
 cp /etc/sudoers /etc/sudoers_cpy
 echo 'sudouser ALL=NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
-su sudouser
 
 ################################################################################
 ### network config
@@ -46,7 +45,6 @@ sudo echo "\tgateway $gateway" >> $network_config_file
 ################################################################################
 
 ssh_config_file=/etc/ssh/sshd_config
-filename=~/.ssh/id_rsa
 
 sudo sed -i "s/#Port 22/Port 50000/" $ssh_config_file
 sudo sed -i "s/PermitRootLogin.*/PermitRootLogin no/" $ssh_config_file
@@ -58,8 +56,8 @@ sudo sed -i "s/#PermitEmptyPassword.*/PermitEmptyPassword no/" $ssh_config_file
 sudo sed -i "s/#PubkeyAuthentication.*/PubkeyAuthentication yes/" $ssh_config_file
 sudo sed -i "s/#UsePAM.*/UsePAM no/" $ssh_config_file
 sudo sed -i "s/UsePAM.*/UsePAM no/" $ssh_config_file
-sudo mkdir -p $filename
-sudo ssh-keygen -q -f $filename -N ""
+sudo mkdir -p ~/.ssh
+sudo ssh-keygen -q -f ~.ssh/id_rsa -N ""
 
 
 
@@ -68,3 +66,4 @@ sudo ssh-keygen -q -f $filename -N ""
 ################################################################################
 
 mv /etc/sudoers_cpy /etc/sudoers
+su sudouser
