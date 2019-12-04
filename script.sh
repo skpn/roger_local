@@ -24,8 +24,8 @@ sudo_gid=$(getent group sudo | cut -d ':' -f 3)
 
 adduser --gid $sudo_gid --disabled-password --gecos "" sudouser
 echo "sudouser:sudopwd" | chpasswd
-cp /etc/sudoers /etc/sudoers_cpy
-echo 'sudouser ALL=NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
+#cp /etc/sudoers /etc/sudoers_cpy
+#echo 'sudouser ALL=NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
 ################################################################################
 ### network config
@@ -80,5 +80,5 @@ sudo sed -i "s/ACCEPT/DROP/" /etc/iptables/rules.v6
 ### set back sudoers
 ################################################################################
 
-mv /etc/sudoers_cpy /etc/sudoers
+#mv /etc/sudoers_cpy /etc/sudoers
 su sudouser
