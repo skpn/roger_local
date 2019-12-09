@@ -4,7 +4,7 @@
 ### packages config
 ################################################################################
 
-echo "\nupdating packages\n"
+echo "\nupdating packages, please wait\n"
 
 sed -i 's/^deb cdrom/# deb cdrom/g' /etc/apt/sources.list >> script_log.txt
 
@@ -17,11 +17,9 @@ apt-get -y install vim >> script_log.txt
 ### user config
 ################################################################################
 
-echo "\ncreating independant sudo user\n"
+echo "\ncreating independant sudo user, please wait\n"
 
-sudo_gid=$(getent group | cut -d ':' -f 3)
-
-adduser --gid $sudo_gid --disabled-password --gecos "" sudouser >> script_log.txt
+adduser --ingroup $sudo --disabled-password --gecos "" sudouser
 echo "sudouser:sudopwd" | chpasswd
 #cp /etc/sudoers /etc/sudoers_cpy
 #echo 'sudouser ALL=NOPASSWD:ALL' | EDITOR='tee -a' visudo
@@ -30,7 +28,7 @@ echo "sudouser:sudopwd" | chpasswd
 ### network config
 ################################################################################
 
-echo "\nconfiguring static IP rules\n"
+echo "\nconfiguring static IP rules, please wait\n"
 
 ipaddr=$(ip addr show enp0s3 | awk '{ if ($1 == "inet") print $2}')
 gateway=$(ip route show default | awk '{ print $3 }')
@@ -45,7 +43,7 @@ echo "\tgateway $gateway" >> $network_config_file
 ### ssh config
 ################################################################################
 
-echo "\nconfiguring SSH rules\n"
+echo "\nconfiguring SSH rules, please wait\n"
 
 ssh_config_file=/etc/ssh/sshd_config
 
@@ -66,7 +64,7 @@ ssh-keygen -q -f ~/.ssh/id_rsa -N "" >> script_log.txt
 ### firewall config
 ################################################################################
 
-echo configuring firewall rules
+echo "\nconfiguring firewall rules, please wait\n"
 
 iptables -A INPUT -i lo -j ACCEPT >> script_log.txt
 iptables -A INPUT -p tcp -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT >> script_log.txt
@@ -79,7 +77,7 @@ iptables -P OUTPUT ACCEPT >> script_log.txt
 ### anti-DoS config
 ################################################################################
 
-echo configuring anti-DoS rules
+echo "\nconfiguring anti-DoS rules, please wait\n"
 
 iptables -t mangle -A PREROUTING -i lo -j ACCEPT >> script_log.txt
 iptables -t mangle -A PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT >> script_log.txt
