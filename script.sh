@@ -84,7 +84,7 @@ iptables -t mangle -A PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j A
 iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW -m multiport --dports 50000,80,25 -j ACCEPT >> script_log.txt
 iptables -t mangle -P PREROUTING DROP >> script_log.txt
 iptables -A INPUT -p tcp -m connlimit --connlimit-above 10 -j REJECT --reject-with tcp-reset >> script_log.txt
-iptables -A INPUT -p tcp -m conntrack --ctstate NEW -m limit 60/s --limit-burst 20 -j ACCEPT >> script_log.txt
+iptables -A INPUT -p tcp -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -j ACCEPT >> script_log.txt
 iptables -A INPUT -p tcp -m conntrack --ctstate NEW -j DROP >> script_log.txt
 
 #check that ssh connection is still ok with this kind of stuff
