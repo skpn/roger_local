@@ -19,7 +19,7 @@ apt-get -y install vim >> script_log.txt
 
 echo "\ncreating independant sudo user, please wait\n"
 
-adduser --ingroup $sudo --disabled-password --gecos "" sudouser
+adduser --ingroup sudo --disabled-password --gecos "" sudouser
 echo "sudouser:sudopwd" | chpasswd
 #cp /etc/sudoers /etc/sudoers_cpy
 #echo 'sudouser ALL=NOPASSWD:ALL' | EDITOR='tee -a' visudo
