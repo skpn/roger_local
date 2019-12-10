@@ -16,6 +16,9 @@ apt-get -y update
 apt-get -y upgrade
 apt-get -y install sudo
 apt-get -y install vim
+#echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
+#echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
+apt-get install -y iptables-persistent
 
 ################################################################################
 ### user config
@@ -87,7 +90,7 @@ ssh-keygen -q -f ~/.ssh/id_rsa -N ""
 ### network config
 ################################################################################
 
-echo "\n\nconfiguring network rules\n\n"
+echo "\n\ncreating network rule files\n\n"
 
 # accept loopback
 iptables -t mangle -A PREROUTING -i lo -j ACCEPT
@@ -117,12 +120,14 @@ iptables -P INPUT DROP
 iptables -P FORWARD DROP
 iptables -P OUTPUT ACCEPT
 
-# make ipv4 rules persistent and set ipv6 rules to drop
-echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
-echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
-apt-get install -y iptables-persistent
-sed -i "s/ACCEPT/DROP/" /etc/iptables/rules.v6
+# set ipv6 policies to drop
+ip6tables -P INPUT DROP
+ip6tables -P FORWARD DROP
+ip6tables -P OUTPUT DROP
 
+# make rules persistent
+iptables-save > /etc/iptables/rules.v4
+ip6tables-save > /etc/iptables/rules.v6
 
 ################################################################################
 ### set back sudoers
