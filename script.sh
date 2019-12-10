@@ -6,7 +6,7 @@
 
 echo script log file: /root/script_log.txt
 
-exec > >(tee -a /root/script_log.txt)
+exec &> >(tee -a "/root/script_log.txt")
 
 echo "\n\nupdating packages\n\n"
 
