@@ -4,11 +4,11 @@
 ### packages update
 ################################################################################
 
-echo script log file: /root/script_log.txt
+echo -e script log file: /root/script_log.txt
 
 exec &> >(tee -a "/root/script_log.txt")
 
-echo "\n\nupdating packages\n\n"
+echo -e "\n\nupdating packages\n\n"
 
 sed -i 's/^deb cdrom/# deb cdrom/g' /etc/apt/sources.list
 
@@ -16,29 +16,29 @@ apt-get -y update
 apt-get -y upgrade
 apt-get -y install sudo
 apt-get -y install vim
-echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
-echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
+echo -e iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
+echo -e iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
 apt-get install -y iptables-persistent
 
 ################################################################################
 ### user config
 ################################################################################
 
-echo "\n\ncreating independant sudo user\n\n"
+echo -e "\n\ncreating independant sudo user\n\n"
 
 # creating user 'sudouser' in group sudo with no personnal info and no password
 adduser --ingroup sudo --disabled-password --gecos "" sudouser
 
 #giving a password to the user 'sudouser'
-echo "sudouser:sudopwd" | chpasswd
+echo -e "sudouser:sudopwd" | chpasswd
 #cp /etc/sudoers /etc/sudoers_cpy
-#echo 'sudouser ALL=NOPASSWD:ALL' | EDITOR='tee -a' visudo
+#echo -e 'sudouser ALL=NOPASSWD:ALL' | EDITOR='tee -a' visudo
 
 ################################################################################
 ### network config
 ################################################################################
 
-echo "\n\nconfiguring static IP rules\n\n"
+echo -e "\n\nconfiguring static IP rules\n\n"
 
 ipaddr=$(ip addr show enp0s3 | awk '{ if ($1 == "inet") print $2}')
 gateway=$(ip route show default | awk '{ print $3 }')
@@ -51,16 +51,16 @@ sed -i "s/iface enp0s3.*/auto enp0s3\\n&/" $network_config_file
 sed -i "s/enp0s3 inet dhcp/enp0s3 inet static/" $network_config_file
 
 # specify the static address as the address that had beein assigned by the dhcp
-echo "\taddress $ipaddr/30" >> $network_config_file
+echo -e "\taddress $ipaddr/30" >> $network_config_file
 
 # specify the gateway
-echo "\tgateway $gateway" >> $network_config_file
+echo -e "\tgateway $gateway" >> $network_config_file
 
 ################################################################################
 ### ssh config
 ################################################################################
 
-echo "\n\nconfiguring SSH rules\n\n"
+echo -e "\n\nconfiguring SSH rules\n\n"
 
 ssh_config_file=/etc/ssh/sshd_config
 
@@ -90,7 +90,7 @@ ssh-keygen -q -f ~/.ssh/id_rsa -N ""
 ### network config
 ################################################################################
 
-echo "\n\ncreating network rule files\n\n"
+echo -e "\n\ncreating network rule files\n\n"
 
 # flush all previous ipv4 rules
 iptables -P INPUT ACCEPT
@@ -110,19 +110,19 @@ ip6tables -F
 ip6tables -X
 
 # reject connection attemps from any IP that already has 10 open connections
-iptables -t mangle -A PREROUTING -p tcp -m connlimit --connlimit-above 10 -j REJECT --reject-with tcp-reset
+iptables -t mangle -A PREROUTING -p tcp -m connlimit --connlimit-above 10 -j DROP
 
 # accept new connections attempts to the ssh (50000), http (80), and smtp (25) ports from any IP that has attempted less than 20 connexions in the last 60 seconds
 iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -m multiport --dports 50000,80,25 -j ACCEPT
 
 # reject other new connections
-iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW -j REJECT --reject-with tcp-reset
+iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW -j DROP
 
 # accept 1 ping per second
 iptables -t mangle -A PREROUTING -p icmp -m icmp --icmp-type 8 -m limit --limit 1/s -j ACCEPT
 
 # reject other icmp packets
-iptables -t mangle -A PREROUTING -p icmp -j REJECT --reject-with tcp-reset
+iptables -t mangle -A PREROUTING -p icmp -j DROP
 
 # the ACCEPT rules defined for PREROUTING are added to the default (filter) table for final acceptance
 iptables -A INPUT -p tcp -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -m multiport --dports 50000,80,25 -j ACCEPT
