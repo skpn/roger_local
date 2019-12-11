@@ -16,8 +16,8 @@ apt-get -y update
 apt-get -y upgrade
 apt-get -y install sudo
 apt-get -y install vim
-#echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
-#echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
+echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
+echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
 apt-get install -y iptables-persistent
 
 ################################################################################
@@ -92,30 +92,49 @@ ssh-keygen -q -f ~/.ssh/id_rsa -N ""
 
 echo "\n\ncreating network rule files\n\n"
 
-# accept loopback
-iptables -t mangle -A PREROUTING -i lo -j ACCEPT
+# flush all previous ipv4 rules
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -t nat -F
+iptables -t mangle -F
+iptables -F
+iptables -X
+
+ip6tables -P INPUT ACCEPT
+ip6tables -P FORWARD ACCEPT
+ip6tables -P OUTPUT ACCEPT
+ip6tables -t nat -F
+ip6tables -t mangle -F
+ip6tables -F
+ip6tables -X
 
 # reject connection attemps from any IP that already has 10 open connections
 iptables -t mangle -A PREROUTING -p tcp -m connlimit --connlimit-above 10 -j REJECT --reject-with tcp-reset
 
-# accept new connections attempts to the ports 50000 (ssh), 80 (http), and 25 (smtp) from any IP that has attempted less than 20 connexions in the last 60 seconds
+# accept new connections attempts to the ssh (50000), http (80), and smtp (25) ports from any IP that has attempted less than 20 connexions in the last 60 seconds
 iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -m multiport --dports 50000,80,25 -j ACCEPT
 
-# accept connections that are either already established or from related machines
-iptables -t mangle -A PREROUTING -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+# reject other new connections
+iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW -j REJECT --reject-with tcp-reset
 
 # accept 1 ping per second
-iptables -t mangle -A PREROUTING -p icmp -m icmp --icmp-type 8 -m limit --limit 1/second -j ACCEPT
+iptables -t mangle -A PREROUTING -p icmp -m icmp --icmp-type 8 -m limit --limit 1/s -j ACCEPT
 
-# the rules defined for PREROUTING are repeated for INPUT
-iptables -A INPUT -i lo -j ACCEPT
-iptables -A INPUT -p tcp -m connlimit --connlimit-above 10 -j REJECT --reject-with tcp-reset
+# reject other icmp packets
+iptables -t mangle -A PREROUTING -p icmp -j REJECT --reject-with tcp-reset
+
+# the ACCEPT rules defined for PREROUTING are added to the default (filter) table for final acceptance
 iptables -A INPUT -p tcp -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -m multiport --dports 50000,80,25 -j ACCEPT
-iptables -A INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 1/second -j ACCEPT
+iptables -A INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 1/s -j ACCEPT
+
+# accept loopback packets
+iptables -A INPUT -i lo -j ACCEPT
+
+# accept established connections and connections from related machines
 iptables -A INPUT -p tcp -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 # after having defined acceptable packets, set the standrd policies for all other packets to DROP
-iptables -t mangle -P PREROUTING DROP
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
 iptables -P OUTPUT ACCEPT
