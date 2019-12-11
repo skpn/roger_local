@@ -155,4 +155,7 @@ ip6tables-save > /etc/iptables/rules.v6
 ################################################################################
 
 #mv /etc/sudoers_cpy /etc/sudoers
+echo done, switching to sudouser
 su sudouser
+
+exit 1
