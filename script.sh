@@ -109,29 +109,25 @@ ip6tables -t mangle -F
 ip6tables -F
 ip6tables -X
 
-# reject connection attemps from any IP that already has 10 open connections
-iptables -t mangle -A PREROUTING -p tcp -m connlimit --connlimit-above 10 -j REJECT --reject-with tcp-reset
+# reject tcp connection attemps from any IP that already has 10 open connections
+iptables -A INPUT -p tcp -m connlimit --connlimit-above 10 -j REJECT --reject-with tcp-reset
 
-# accept new connections attempts to the ssh (50000), http (80), and smtp (25) ports from any IP that has attempted less than 20 connexions in the last 60 seconds
-iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -m multiport --dports 50000,80,25 -j ACCEPT
+# accept new tcp connections attempts to the ssh (50000), http (80), and smtp (25) ports from any IP that has attempted less than 20 connexions in the last 60 seconds
+iptables -A INPUT -p tcp --syn -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -m multiport --dports 50000,80,25 -j ACCEPT
 
-# reject other new connections
-iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW -j REJECT --reject-with tcp-reset
+# reject other new tcp connections
+iptables -A INPUT -p tcp --syn -m conntrack --ctstate NEW -j REJECT --reject-with tcp-reset
 
 # accept 1 ping per second
-iptables -t mangle -A PREROUTING -p icmp -m icmp --icmp-type 8 -m limit --limit 1/s -j ACCEPT
+iptables -A INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 1/s -j ACCEPT
 
 # reject other icmp packets
-iptables -t mangle -A PREROUTING -p icmp -j REJECT --reject-with tcp-reset
-
-# the ACCEPT rules defined for PREROUTING are added to the default (filter) table for final acceptance
-iptables -A INPUT -p tcp -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -m multiport --dports 50000,80,25 -j ACCEPT
-iptables -A INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 1/s -j ACCEPT
+iptables -A INPUT -p icmp -j REJECT --reject-with tcp-reset
 
 # accept loopback packets
 iptables -A INPUT -i lo -j ACCEPT
 
-# accept established connections and connections from related machines
+# accept established tcp connections and tcp connections from related machines
 iptables -A INPUT -p tcp -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 # after having defined acceptable packets, set the standrd policies for all other packets to DROP
