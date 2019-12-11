@@ -68,7 +68,7 @@ ssh_config_file=/etc/ssh/sshd_config
 sed -i "s/#Port 22/Port 50000/" $ssh_config_file
 
 # forbid ssh connections to the root account
-sed -i "s/PermitRootLogin.*/PermitRootLogin no/" $ssh_config_file
+sed -i "s/#PermitRootLogin.*/PermitRootLogin no/" $ssh_config_file
 sed -i "s/#StrictModes.*/StrictModes yes/" $ssh_config_file
 
 # enable ssh authentication via public keys 
@@ -84,6 +84,7 @@ sed -i "s/UsePAM.*/UsePAM no/" $ssh_config_file
 
 # create a folder for rsa keys at the standard emplacement and generate a keypair
 mkdir -p ~/.ssh
+keys_file=$(awk -F: /#AuthorizedKeysFile/{print} $ssh_config_file | cut -d'	' -f 2)
 ssh-keygen -q -f ~/.ssh/id_rsa -N ""
 
 ################################################################################
@@ -109,42 +110,43 @@ ip6tables -t mangle -F
 ip6tables -F
 ip6tables -X
 
-# reject connection attemps from any IP that already has 10 open connections
+
+echo  reject connection attemps from any IP that already has 10 open connections
 iptables -t mangle -A PREROUTING -p tcp -m connlimit --connlimit-above 10 -j DROP
 
-# accept new connections attempts to the ssh (50000), http (80), and smtp (25) ports from any IP that has attempted less than 20 connexions in the last 60 seconds
+echo  accept new connections attempts to the ssh (50000), http (80), and smtp (25) ports from any IP that has attempted less than 20 connexions in the last 60 seconds
 iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -m multiport --dports 50000,80,25 -j ACCEPT
 
-# reject other new connections
+echo  reject other new connections
 iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW -j DROP
 
-# accept 1 ping per second
+echo  accept 1 ping per second
 iptables -t mangle -A PREROUTING -p icmp -m icmp --icmp-type 8 -m limit --limit 1/s -j ACCEPT
 
-# reject other icmp packets
+echo  reject other icmp packets
 iptables -t mangle -A PREROUTING -p icmp -j DROP
 
-# the ACCEPT rules defined for PREROUTING are added to the default (filter) table for final acceptance
+echo  the ACCEPT rules defined for PREROUTING are added to the default (filter) table for final acceptance
 iptables -A INPUT -p tcp -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -m multiport --dports 50000,80,25 -j ACCEPT
 iptables -A INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 1/s -j ACCEPT
 
-# accept loopback packets
+echo  accept loopback packets
 iptables -A INPUT -i lo -j ACCEPT
 
-# accept established connections and connections from related machines
+echo  accept established connections and connections from related machines
 iptables -A INPUT -p tcp -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
-# after having defined acceptable packets, set the standrd policies for all other packets to DROP
+echo  after having defined acceptable packets, set the standrd policies for all other packets to DROP
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
 iptables -P OUTPUT ACCEPT
 
-# set ipv6 policies to drop
+echo  set ipv6 policies to drop
 ip6tables -P INPUT DROP
 ip6tables -P FORWARD DROP
 ip6tables -P OUTPUT DROP
 
-# make rules persistent
+echo  make rules persistent
 iptables-save > /etc/iptables/rules.v4
 ip6tables-save > /etc/iptables/rules.v6
 
