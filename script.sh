@@ -9,7 +9,7 @@ log_file="/root/setup_log.txt"
 
 echo -e "\n\nscript log file: $log_file\n\n"
 
-exec &> >(tee -a $log_file)
+exec &> >(tee -a $log_file) | exit 1
 
 echo -e "\n\nupdating packages\n\n"
 
