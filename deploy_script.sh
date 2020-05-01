@@ -28,8 +28,10 @@ echo -e "iptables-persistent iptables-persistent/autosave_v6 boolean "
 echo -e "updating sources, upgrading, installing necessary packages"
 apt -y update
 apt -y upgrade
-apt install -y sudo
-apt install -y iptables-persistent
+apt -y install sudo
+apt -y install iptables-persistent
+apt -y install git
+apt -y install vim
 apt -y install iwatch
 apt -y install sendmail
 
@@ -43,9 +45,18 @@ echo -e "\n\ncreating independant sudo user\n\n"
 echo -e "creating user 'sudouser' in group sudo with no personnal info"
 adduser --ingroup sudo --disabled-password --gecos "" sudouser
 
+while [ 1 ];
+do
+	read -p "Please choose sudouser's password: " sudopwd
+	read -p "Please repeat sudouser's password: " sudopwd_check
+	if [ $sudopwd == $sudopwd_check ]; then
+		break
+	else
+		echo "Password do not match"
+done
+
 ###
-echo -e "giving password sudopwd to user 'sudouser"
-echo "sudouser:sudopwd" | chpasswd
+echo "sudouser:$sudopwd" | chpasswd
 
 ################################################################################
 ### network config
