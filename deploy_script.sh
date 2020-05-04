@@ -28,6 +28,7 @@ echo -e "iptables-persistent iptables-persistent/autosave_v6 boolean "
 echo -e "updating sources, upgrading, installing necessary packages"
 apt -y update
 apt -y upgrade
+apt -y autoremove
 apt -y install sudo
 apt -y install iptables-persistent
 apt -y install git
@@ -53,6 +54,7 @@ do
 		break
 	else
 		echo "Password do not match"
+	fi
 done
 
 ###
