@@ -1,5 +1,5 @@
 
-!/bin/bash
+#!/bin/bash
 
 ################################################################################
 ### packages update
@@ -43,22 +43,32 @@ apt -y install sendmail
 echo -e "\n\ncreating independant sudo user\n\n"
 
 ###
-echo -e "creating user 'sudouser' in group sudo with no personnal info"
-adduser --ingroup sudo --disabled-password --gecos "" sudouser
+echo -e "creating user sudo user in group sudo with no personnal info"
 
 while [ 1 ];
 do
-	read -p "Please choose sudouser's password: " sudopwd
-	read -p "Please repeat sudouser's password: " sudopwd_check
+	read -p "Please choose a sudo user's name: " sudouser
+	read -p "Do you confirm the new name as '$sudouser' ? yes/no " answer
+	if [ $answer == "yes" -o $answer == "y" ]; then
+		break
+	fi
+done
+
+adduser --ingroup sudo --disabled-password --gecos "" $sudouser
+
+while [ 1 ];
+do
+	read -s -p "Please choose sudo user's password: " sudopwd
+	read -s -p "Please retype sudo user's password: " sudopwd_check
 	if [ $sudopwd == $sudopwd_check ]; then
 		break
 	else
-		echo "Password do not match"
+		echo "Passwords do not match"
 	fi
 done
 
 ###
-echo "sudouser:$sudopwd" | chpasswd
+echo "$sudouser:$sudopwd" | chpasswd
 
 ################################################################################
 ### network config
@@ -101,7 +111,6 @@ sed -i "s/#Port 22/Port 50000/" $ssh_conf
 ###
 echo -e "disabling ssh connections to the root account"
 sed -i "s/#PermitRootLogin.*/PermitRootLogin no/" $ssh_conf
-sed -i "s/#StrictModes.*/StrictModes yes/" $ssh_conf
 
 ###
 echo -e "allowing ssh authentication via public keys"
@@ -110,17 +119,17 @@ sed -i "s/#PubkeyAuthentication.*/PubkeyAuthentication yes/" $ssh_conf
 ###
 echo -e "disabling all other modes of ssh authentication"
 sed -i "s/#PasswordAuthentication.*/PasswordAuthentication no/" $ssh_conf
+sed -i "s/#PermitEmptyPassword.*/PermitEmptyPassword no/" $ssh_conf
 sed -i "s/#HostbasedAuthentication.*/HostbasedAuthentication no/" $ssh_conf
 sed -i "s/#ChallengeResponse.*/ChallengeResponseAuthentication no/" $ssh_conf
-sed -i "s/#PermitEmptyPassword.*/PermitEmptyPassword no/" $ssh_conf
 sed -i "s/#UsePAM.*/UsePAM no/" $ssh_conf
 sed -i "s/UsePAM.*/UsePAM no/" $ssh_conf
 
 ###
-echo -e "creating a folder for rsa keys at the standard emplacement and generate "
-	"a keypair"
+echo -e "creating a rsa keys at /$sudouser/.ssh/id_rsa"
+
 mkdir -p ~/.ssh
-ssh-keygen -q -f ~/.ssh/id_rsa -N ""
+ssh-keygen -y -q -f /$sudouser/.ssh/id_rsa -N ""
 
 ################################################################################
 ### network config
@@ -243,37 +252,37 @@ systemctl mask keyboard-setup.service
 ### sources update
 ################################################################################
 
-update_sh="bash /root/update_script.sh"
-
-echo -e "\n\ncreating source update scripts\n\n"
+update_sh="/root/update_script.sh"
+update_cmd="bash $update_sh"
+update_log="/var/log/update_script.log"
 
 ###
-echo -e "creating update script (script: $update_sh, log file: "
-	"/var/log/update_script.log"
-echo -e '!/bin/bash\nexec &> >(tee -a \"/var/log/update_script.log\")\n'
-	'sudo apt-get update -y\nsudo apt-get upgrade -y' > /root/update_script.sh
+echo -ne "creating apt source update logging script "
+echo -e "(script: $update_sh, log file: $update_log)"
+echo -e 'sudo apt -y update && sudo apt -y upgrade' > update_sh
 
 ###
 echo -e "setting system crontab to run update script at boot and 4AM"
 sed -i 's/^#$//g' /etc/crontab
-echo -e "0	4	*	*	*	$update_sh\n@reboot $update_sh\n#" >> /etc/crontab
+echo -e "0\t4\t*\t*\t*\troot\t$update_cmd" >> /etc/crontab
+echo -e "@reboot\t\t\troot\t$update_cmd" >> /etc/crontab
 
 ################################################################################
 ### crontab surveillance
 ################################################################################
 
-echo -e "\n\nsetting crontab surveillance scripts\n\n"
+echo -e "\n\nsetting alert on crontab modification\n\n"
 
 ###
-echo -e "setting file surveillance"
-inotifywatch -e modify /etc/crontab 
+file="/etc/crontab"
+echo "root: sikpenou@student.42.fr" >> ~/.forward
+incron $file IN_MODIFY mail -s "$HOSTNAME: $file was modified" user@example.com < /dev/null
 
 ################################################################################
 ### exit script
 ################################################################################
 
 ###
-echo -e "adding blank line to end of log file"
 echo "" >> $log_file
 
 echo -e "\n\nVM set up, exiting - script log file: $log_file\n\n"
