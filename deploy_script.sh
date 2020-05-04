@@ -275,8 +275,9 @@ echo -e "\n\nsetting alert on crontab modification\n\n"
 
 ###
 file="/etc/crontab"
-echo "root: sikpenou@student.42.fr" >> ~/.forward
-incron $file IN_MODIFY mail -s "$HOSTNAME: $file was modified" user@example.com < /dev/null
+subject="$HOSTNAME: $file was modified at $(date +'%m/%d/%Y %H:%M:%S')"
+echo "root: sikpenou@student.42.fr, /var/mail/root, root@localhost" >> ~/.forward
+incron $file IN_MODIFY mail -s $subject user@example.com < /dev/null
 
 ################################################################################
 ### exit script
