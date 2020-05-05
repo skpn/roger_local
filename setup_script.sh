@@ -58,6 +58,7 @@ apt -y install vim
 apt -y install incron
 apt -y install sendmail
 
+
 ################################################################################
 ### user config
 ################################################################################
@@ -65,23 +66,10 @@ apt -y install sendmail
 echo -e "\n\ncreating independant sudo user\n\n"
 
 ###
-echo -e "creating user sudo user in group sudo with no personnal info"
+echo -e "creating new sudo user '$username'"
 
 adduser --ingroup sudo --disabled-password --gecos "" $username
 
-while [ 1 ];
-do
-	read -s -p "Please choose sudo user's password: " sudopwd
-	read -s -p "Please retype sudo user's password: " sudopwd_check
-	if [ $sudopwd == $sudopwd_check ]; then
-		break
-	else
-		echo "Passwords do not match"
-	fi
-done
-
-###
-echo "$username:$sudopwd" | chpasswd
 
 ################################################################################
 ### network config
@@ -108,6 +96,7 @@ sed -i "s/enp0s3 inet dhcp/enp0s3 inet static/" $network_config_file
 echo -e "specifying the static address and gateway"
 echo -e "\taddress $ipaddr/30" >> $network_config_file
 echo -e "\tgateway $gateway" >> $network_config_file
+
 
 ################################################################################
 ### ssh config
@@ -141,8 +130,9 @@ sed -i "s/UsePAM.*/UsePAM no/" $ssh_conf
 ###
 echo -e "creating a rsa keys at /$username/.ssh/id_rsa"
 
-mkdir -p ~/.ssh
+mkdir -p /$username/.ssh
 ssh-keygen -y -q -f /$username/.ssh/id_rsa -N ""
+
 
 ################################################################################
 ### network config
@@ -212,7 +202,7 @@ echo -e "accepting established connections and connections from related machines
 iptables -A INPUT -p tcp -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ###
-echo -e "setting the standrd policies for all other packets to DROP"
+echo -e "setting the standard policies for all other packets to DROP"
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
 iptables -P OUTPUT ACCEPT
@@ -227,6 +217,7 @@ ip6tables -P OUTPUT DROP
 echo -e "making iptable configuration persistent"
 iptables-save > /etc/iptables/rules.v4
 ip6tables-save > /etc/iptables/rules.v6
+
 
 ################################################################################
 ### disable unneeded services
@@ -261,6 +252,7 @@ systemctl stop keyboard-setup.service
 systemctl disable keyboard-setup.service
 systemctl mask keyboard-setup.service
 
+
 ################################################################################
 ### sources update
 ################################################################################
@@ -272,13 +264,14 @@ update_log="/var/log/update_script.log"
 ###
 echo -ne "creating apt source update logging script "
 echo -e "(script: $update_sh, log file: $update_log)"
-echo -e 'sudo apt -y update && sudo apt -y upgrade' > update_sh
+echo -e 'apt -y update && apt -y upgrade' > update_sh
 
 ###
 echo -e "setting system crontab to run update script at boot and 4AM"
 sed -i 's/^#$//g' /etc/crontab
 echo -e "0 4 * * *\troot\t$update_cmd" >> /etc/crontab
 echo -e "@reboot\t\troot\t$update_cmd" >> /etc/crontab
+
 
 ################################################################################
 ### file surveillance script
@@ -299,6 +292,7 @@ newaliases
 ## setting incron
 echo root >> /etc/incron.allow
 echo "$file IN_MODIFY mail -s $subject root < /dev/null" >> /etc/incron.d/root
+
 
 ################################################################################
 ### exit script
