@@ -2,6 +2,28 @@
 #!/bin/bash
 
 ################################################################################
+### set custom variables
+################################################################################
+
+## get variables from setup_config file
+if [ -f setup_config ]; then
+	source setup_config
+else
+	echo "configuration file 'setup_config' was not found"
+	while [ 1 ];
+	do
+		read -p "Please define a new user name: " $username
+		read -p "Please retype the new user name: " $username_check
+		if [ $username == $username_check ]; then
+			break
+		else
+			echo "User name does not match."
+		fi
+	done
+fi
+
+
+################################################################################
 ### packages update
 ################################################################################
 
@@ -45,16 +67,7 @@ echo -e "\n\ncreating independant sudo user\n\n"
 ###
 echo -e "creating user sudo user in group sudo with no personnal info"
 
-while [ 1 ];
-do
-	read -p "Please choose a sudo user's name: " sudouser
-	read -p "Do you confirm the new name as '$sudouser' ? yes/no " answer
-	if [ $answer == "yes" -o $answer == "y" ]; then
-		break
-	fi
-done
-
-adduser --ingroup sudo --disabled-password --gecos "" $sudouser
+adduser --ingroup sudo --disabled-password --gecos "" $username
 
 while [ 1 ];
 do
@@ -68,7 +81,7 @@ do
 done
 
 ###
-echo "$sudouser:$sudopwd" | chpasswd
+echo "$username:$sudopwd" | chpasswd
 
 ################################################################################
 ### network config
@@ -126,10 +139,10 @@ sed -i "s/#UsePAM.*/UsePAM no/" $ssh_conf
 sed -i "s/UsePAM.*/UsePAM no/" $ssh_conf
 
 ###
-echo -e "creating a rsa keys at /$sudouser/.ssh/id_rsa"
+echo -e "creating a rsa keys at /$username/.ssh/id_rsa"
 
 mkdir -p ~/.ssh
-ssh-keygen -y -q -f /$sudouser/.ssh/id_rsa -N ""
+ssh-keygen -y -q -f /$username/.ssh/id_rsa -N ""
 
 ################################################################################
 ### network config
@@ -264,20 +277,28 @@ echo -e 'sudo apt -y update && sudo apt -y upgrade' > update_sh
 ###
 echo -e "setting system crontab to run update script at boot and 4AM"
 sed -i 's/^#$//g' /etc/crontab
-echo -e "0\t4\t*\t*\t*\troot\t$update_cmd" >> /etc/crontab
-echo -e "@reboot\t\t\troot\t$update_cmd" >> /etc/crontab
+echo -e "0 4 * * *\troot\t$update_cmd" >> /etc/crontab
+echo -e "@reboot\t\troot\t$update_cmd" >> /etc/crontab
 
 ################################################################################
-### crontab surveillance
+### file surveillance script
 ################################################################################
 
 echo -e "\n\nsetting alert on crontab modification\n\n"
 
 ###
 file="/etc/crontab"
-subject="$HOSTNAME: $file was modified at $(date +'%m/%d/%Y %H:%M:%S')"
-echo "root: sikpenou@student.42.fr, /var/mail/root, root@localhost" >> ~/.forward
-incron $file IN_MODIFY mail -s $subject user@example.com < /dev/null
+
+## dynamic timestamp for notification email
+subject="subject: $HOSTNAME: $file was modified"
+
+## changing and sourcing root's mail redirection
+sed-i 's/root:/#root:/' /etc/aliases
+newaliases
+
+## setting incron
+echo root >> /etc/incron.allow
+echo "$file IN_MODIFY mail -s $subject root < /dev/null" >> /etc/incron.d/root
 
 ################################################################################
 ### exit script
