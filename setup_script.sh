@@ -286,7 +286,8 @@ file="/etc/crontab"
 subject="subject: $HOSTNAME: $file was modified"
 
 ## changing and sourcing root's mail redirection
-sed-i 's/root:/#root:/' /etc/aliases
+echo -e "setting new mail for root"
+sed -i 's/root:/#root:/' /etc/aliases
 newaliases
 
 ## setting incron
