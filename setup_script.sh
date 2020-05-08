@@ -42,7 +42,7 @@ log_file="/root/setup_log.txt"
 
 echo -e "\n\nscript log file: $log_file\n\n"
 
-exec &> $log_file)
+exec &> $log_file
 
 ################################################################################
 ### packages update
