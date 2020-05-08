@@ -20,6 +20,11 @@ else
 			echo "User name does not match."
 		fi
 	done
+	if [ -f $HOME/.ssh/id_rsa.pub ]; then
+		host_key=$(cat $HOME/.ssh/id_rsa.pub)
+	else
+		echo -e "$HOME/.ssh/id_rsa.pub file not found, missing host ssh key"
+	fi
 fi
 
 
@@ -133,7 +138,9 @@ echo -e "creating a rsa keys at /$username/.ssh/id_rsa"
 
 mkdir -p /$username/.ssh
 ssh-keygen -y -q -f /$username/.ssh/id_rsa -N ""
-exit 1
+
+echo $host_key > /$username/.ssh/authorized_keys
+#exit 1
 
 ################################################################################
 ### network config
