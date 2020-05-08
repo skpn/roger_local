@@ -6,26 +6,21 @@
 ################################################################################
 
 ## get variables from setup_config file
-if [ -f setup_config ]; then
+if [ -f setup_config -o -f $1 ]; then
 	source setup_config
 else
-	echo "configuration file 'setup_config' was not found"
-	while [ 1 ];
-	do
-		read -p "Please define a new user name: " $username
-		read -p "Please retype the new user name: " $username_check
-		if [ $username == $username_check ]; then
-			break
-		else
-			echo "User name does not match."
-		fi
-	done
-	if [ -f $HOME/.ssh/id_rsa.pub ]; then
-		host_key=$(cat $HOME/.ssh/id_rsa.pub)
-	else
-		echo -e "$HOME/.ssh/id_rsa.pub file not found, missing host ssh key"
-	fi
+	echo -e "Configuration file 'setup_config' was not found.\nYou can provide"\
+		"the path to a config file like so: ./setup_scrip path/to/file.\nThe "\
+		"config file must contain the definitons of the 'username' (the new"\
+		"sudo user), 'root_email' (the mail taht will receive root emails),"\
+		" and 'host_key' (the ssh public key that will be used to connect to"\
+		"the machine after the setup) variables"
+	exit
 fi
+
+if [ -z $username -o -z $root_email -o -z $host_key ]; then
+	echo -e "Config file is missing 'username' / 'root_email' / 'host_key'"\
+		"variable"
 
 
 ################################################################################
