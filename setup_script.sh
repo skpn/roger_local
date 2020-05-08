@@ -6,7 +6,7 @@
 ################################################################################
 
 ## get variables from setup_config file
-if [ -f setup_config -o -f $1 ]; then
+if [ -f ./setup_config -o -f $1 ]; then
 	source setup_config
 else
 	echo -e "Configuration file 'setup_config' was not found.\nYou can provide"\
@@ -15,12 +15,14 @@ else
 		"sudo user), 'root_email' (the mail taht will receive root emails),"\
 		" and 'host_key' (the ssh public key that will be used to connect to"\
 		"the machine after the setup) variables"
-	exit
+	exit 1
 fi
 
 if [ -z $username -o -z $root_email -o -z $host_key ]; then
 	echo -e "Config file is missing 'username' / 'root_email' / 'host_key'"\
 		"variable"
+	exit 1
+fi
 
 
 ################################################################################
@@ -31,7 +33,7 @@ log_file="/root/setup_log.txt"
 
 echo -e "\n\nscript log file: $log_file\n\n"
 
-exec &> >(tee -a $log_file) | exit 1
+exec &> $log_file)
 
 ################################################################################
 ### packages update
@@ -135,6 +137,8 @@ mkdir -p /$username/.ssh
 ssh-keygen -y -q -f /$username/.ssh/id_rsa -N ""
 
 echo $host_key > /$username/.ssh/authorized_keys
+
+service ssh restart
 #exit 1
 
 ################################################################################
@@ -145,16 +149,11 @@ echo -e "\n\ncreating network rule files\n\n"
 
 ###
 echo -e "flushing all previous ipv4 rules"
-&éiptables -F
+iptables -F
 iptables -X
 
 ###
 echo -e "flushing all previous ipv6 rules"
-ip6tables -P INPUT ACCEPT
-ip6tables -P FORWARD ACCEPT
-ip6tables -P OUTPUT ACCEPT
-ip6tables -t nat -F
-ip6tables -t mangle -F
 ip6tables -F
 ip6tables -X
 
@@ -221,7 +220,7 @@ ip6tables-save > /etc/iptables/rules.v6
 ### disable unneeded services
 ################################################################################
 
-echo -e "\n\ndisabling unneeded services\n\n"
+echo -e "\n\ndisabling unused services\n\n"
 
 # apparmor creates application profiles to limit resource access
 echo -e "disabling apparmor (application resource access control)"
@@ -252,7 +251,7 @@ systemctl mask keyboard-setup.service
 
 
 ################################################################################
-### sources update
+### sources update script
 ################################################################################
 
 update_sh="/root/update_script.sh"
@@ -294,7 +293,7 @@ echo "$file IN_MODIFY mail -s $subject root < /dev/null" >> /etc/incron.d/root
 
 
 ################################################################################
-### exit script
+### exit setup
 ################################################################################
 
 ###
