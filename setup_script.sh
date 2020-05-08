@@ -24,7 +24,7 @@ fi
 
 
 ################################################################################
-### packages update
+### setting log file
 ################################################################################
 
 log_file="/root/setup_log.txt"
@@ -32,6 +32,10 @@ log_file="/root/setup_log.txt"
 echo -e "\n\nscript log file: $log_file\n\n"
 
 exec &> >(tee -a $log_file) | exit 1
+
+################################################################################
+### packages update
+################################################################################
 
 echo -e "\n\nupdating packages\n\n"
 
@@ -123,16 +127,13 @@ echo -e "disabling all other modes of ssh authentication"
 sed -i "s/#PasswordAuthentication.*/PasswordAuthentication no/" $ssh_conf
 sed -i "s/#PermitEmptyPassword.*/PermitEmptyPassword no/" $ssh_conf
 sed -i "s/#HostbasedAuthentication.*/HostbasedAuthentication no/" $ssh_conf
-sed -i "s/#ChallengeResponse.*/ChallengeResponseAuthentication no/" $ssh_conf
-sed -i "s/#UsePAM.*/UsePAM no/" $ssh_conf
-sed -i "s/UsePAM.*/UsePAM no/" $ssh_conf
 
 ###
 echo -e "creating a rsa keys at /$username/.ssh/id_rsa"
 
 mkdir -p /$username/.ssh
 ssh-keygen -y -q -f /$username/.ssh/id_rsa -N ""
-
+exit 1
 
 ################################################################################
 ### network config
@@ -142,12 +143,7 @@ echo -e "\n\ncreating network rule files\n\n"
 
 ###
 echo -e "flushing all previous ipv4 rules"
-iptables -P INPUT ACCEPT
-iptables -P FORWARD ACCEPT
-iptables -P OUTPUT ACCEPT
-iptables -t nat -F
-iptables -t mangle -F
-iptables -F
+&éiptables -F
 iptables -X
 
 ###
