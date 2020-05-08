@@ -93,7 +93,7 @@ adduser --ingroup sudo --disabled-password --gecos "" $username
 echo -e "\n\nconfiguring static IP rules\n\n"
 
 ###
-echo -e "getting current IP and gateway to re-use in static interface "
+echo -e "getting current IP and gateway to re-use in static interface "\
 	"configuration"
 ipaddr=$(ip addr show enp0s3 | awk '{ if ($1 == "inet") print $2}')
 gateway=$(ip route show default | awk '{ print $3 }')
@@ -112,6 +112,7 @@ echo -e "specifying the static address and gateway"
 echo -e "\taddress $ipaddr/30" >> $network_config_file
 echo -e "\tgateway $gateway" >> $network_config_file
 
+exit 1
 
 ################################################################################
 ### ssh config
@@ -140,11 +141,9 @@ sed -i "s/#PermitEmptyPassword.*/PermitEmptyPassword no/" $ssh_conf
 sed -i "s/#HostbasedAuthentication.*/HostbasedAuthentication no/" $ssh_conf
 
 ###
-echo -e "creating a rsa keys at /$username/.ssh/id_rsa"
+echo -e "creating rsa keys in /$username/.ssh"
 
 mkdir -p /$username/.ssh
-ssh-keygen -y -q -f /$username/.ssh/id_rsa -N ""
-
 echo $host_key > /$username/.ssh/authorized_keys
 
 service ssh restart
