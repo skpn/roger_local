@@ -6,8 +6,17 @@
 ################################################################################
 
 ## get variables from setup_config file
-if [ -f ./setup_config -o -f $1 ]; then
-	source setup_config
+if [ "$#" -lt 1 ]; then
+	setup_source="setup_config"
+elif [ "$#" -eq 1 ]; then
+	setup_source=$1
+else
+	echo -e "Usage: bash setup_script.sh [path/to/config/file]"
+	exit 1
+fi
+
+if [ -f $setup_source ]; then
+	source $setup_source
 else
 	echo -e "Configuration file 'setup_config' was not found.\nYou can provide"\
 		"the path to a config file like so: ./setup_scrip path/to/file.\nThe "\
