@@ -59,9 +59,9 @@ launch_subscript setup_packages.sh
 launch_subscript setup_user.sh $username
 
 launch_subscript setup_ssh.sh $setup_source
-exit 1
-launch_subscript setup_network.sh
 
+launch_subscript setup_network.sh
+exit 1
 launch_subscript setup_firewall.sh
 
 launch_subscript setup_services.sh
