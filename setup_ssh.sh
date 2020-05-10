@@ -21,6 +21,10 @@ sed -i "s/#PubkeyAuthentication.*/PubkeyAuthentication yes/" $ssh_conf
 ###
 echo -e "storing trusted keys in /home/$username/.ssh/authorized_keys"
 mkdir -p /home/$username/.ssh
+echo "arg1: $1"
+echo "arg2: $2"
+echo "username: $username"
+echo "host_key: $host_key"
 echo $host_key > /home/$username/.ssh/authorized_keys
 
 ###
