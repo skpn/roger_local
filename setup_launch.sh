@@ -46,7 +46,9 @@ exec &> $log_file
 
 function launch_subscript() {
 	subscript=$(find . -type f -name "$1")
-	subscript_args="${@:1}"
+	if [ "$#" -gt 1 ]; then
+		subscript_args="${@:2}"
+	fi
 	bash $subscript $subscript_args
 }
 
