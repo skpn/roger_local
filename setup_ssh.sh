@@ -7,8 +7,7 @@ echo -e "\n\nconfiguring SSH rules\n\n"
 
 ssh_conf="/etc/ssh/sshd_config"
 
-username=$1
-host_key=$2
+source $1
 
 ###
 echo -e "changing default ssh port to 50000"
