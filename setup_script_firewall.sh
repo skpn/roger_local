@@ -16,15 +16,15 @@ ip6tables -F
 ip6tables -X
 
 ###
-echo -e "rejecting connection attemps from any IP that already has 10 open "
+echo -e "rejecting connection attemps from any IP that already has 10 open "\
 	"connections"
 iptables -t mangle -A PREROUTING -p tcp -m connlimit --connlimit-above 10	\
 	-j DROP
 
 ###
-echo -e "accepting new connections attempts to the ssh (50000), http (80), and "
-	"smtp (25) ports from any IP that has attempted less than 20 connexions in "
-	"the last 60 seconds"
+echo -e "accepting new connections attempts to the ssh (50000), http (80), and"\
+	" smtp (25) ports from any IP that has attempted less than 20 connexions "\
+	"in the last 60 seconds"
 iptables -t mangle -A PREROUTING -p tcp --syn -m conntrack --ctstate NEW	\
 	-m limit --limit 60/s --limit-burst 20 -m multiport 					\
 	--dports 50000,80,25 -j ACCEPT
@@ -53,7 +53,8 @@ echo -e "accepting loopback packets"
 iptables -A INPUT -i lo -j ACCEPT
 
 ###
-echo -e "accepting established connections and connections from related machines"
+echo -e "accepting established connections and connections from related "\
+	"machines"
 iptables -A INPUT -p tcp -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ###

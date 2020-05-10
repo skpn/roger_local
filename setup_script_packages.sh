@@ -19,12 +19,12 @@ echo -e "iptables-persistent iptables-persistent/autosave_v6 boolean "
 ###
 echo -e "updating sources, upgrading, installing necessary packages"
 
-apt -y update
-apt -y upgrade
-apt -y autoremove
+apt -y -qq update
+apt -y -qq upgrade
+apt -y -qq autoremove
 
-apt -y install sudo
-apt -y install iptables-persistent
-apt -y install git
-apt -y install vim
-apt -y install incron
+apt -y -qq install sudo
+apt -y -qq install iptables-persistent
+apt -y -qq install git
+apt -y -qq install vim
+apt -y -qq install incron
