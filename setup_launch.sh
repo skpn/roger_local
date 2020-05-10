@@ -27,9 +27,11 @@ else
 	exit 1
 fi
 
-if [ -z $username ] || [ -z $host_key ]; then
-	echo -e "Config file '$setup_source' is missing 'username' and/or "\
-		"'host_key' variable(s)"
+if [ -z $username ]; then
+	echo -e "Config file '$setup_source' is missing 'username' variable"
+	exit 1
+elif [ -z $host_key ]; then
+	echo -e "Config file '$setup_source' is missing 'host_key' variable"
 	exit 1
 fi
 
@@ -73,5 +75,9 @@ launch_subscript setup_cronjobs.sh
 ###
 echo ""
 
-echo -e "\n\nVM set up, exiting - script log file: $log_file\n\n"
+echo -e "\n\nVM set up - script log file: $log_file\n\n"
 exit 1
+
+echo -ne "choose new password for sudouser: "
+
+passwd $username
