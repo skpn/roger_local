@@ -10,5 +10,5 @@ username=$1
 ###
 echo -e "creating new sudo user '$username'"
 
-adduser --ingroup sudo --disabled-password --gecos "" $username
+adduser --ingroup sudo --gecos "" $username
 

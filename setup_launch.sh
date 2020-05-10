@@ -7,7 +7,7 @@
 
 ## get variables from setup_config file
 if [ "$#" -lt 1 ]; then
-	setup_source="setup_config"
+	setup_source=$(find . -type f -name "setup_config")
 elif [ "$#" -eq 1 ]; then
 	setup_source=$1
 	echo -e "Using file $1 as config file"
@@ -27,7 +27,7 @@ else
 	exit 1
 fi
 
-if [ -z $username ] || [ z $host_key ]; then
+if [ -z $username ] || [ -z $host_key ]; then
 	echo -e "Config file '$setup_source' is missing 'username' and/or "\
 		"'host_key' variable(s)"
 	exit 1
@@ -44,12 +44,18 @@ echo -e "\n\nscript log file: $log_file\n\n"
 
 exec &> $log_file
 
+function launch_subscript() {
+	subscript=$(find . -type f -name "$1")
+	subscript_args="${@:1}"
+	bash $subscript $subscript_args
+}
+
 bash setup_packages.sh
 
 bash setup_user.sh $username
 
 bash setup_ssh.sh $username $host_key
-
+exit 1
 bash setup_network.sh
 
 bash setup_firewall.sh
