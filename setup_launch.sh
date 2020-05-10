@@ -56,9 +56,9 @@ function launch_subscript() {
 
 launch_subscript setup_packages.sh
 
-launch_subscript setup_user.sh $username
+launch_subscript setup_user.sh "$username"
 
-launch_subscript setup_ssh.sh $username $host_key
+launch_subscript setup_ssh.sh "$username" "$host_key"
 exit 1
 launch_subscript setup_network.sh
 

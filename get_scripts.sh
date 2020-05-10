@@ -8,6 +8,8 @@ function get_file() {
 	if [ ! -f setup/$1 ]; then
 		echo -e "could not get file $1"
 		exit 1
+	else
+		echo -e "got file '$1' in 'setup' folder"
 	fi
 }
 
