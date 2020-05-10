@@ -7,6 +7,9 @@ echo -e "\n\nconfiguring SSH rules\n\n"
 
 ssh_conf=/etc/ssh/sshd_config
 
+username=$1
+host_key=$2
+
 ###
 echo -e "changing default ssh port to 50000"
 sed -i "s/#Port 22/Port 50000/" $ssh_conf

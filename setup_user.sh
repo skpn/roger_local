@@ -5,8 +5,10 @@
 
 echo -e "\n\ncreating independant sudo user\n\n"
 
-###
-echo -e "creating new sudo user '$1'"
+username=$1
 
-adduser --ingroup sudo --disabled-password --gecos "" $1
+###
+echo -e "creating new sudo user '$username'"
+
+adduser --ingroup sudo --disabled-password --gecos "" $username
 

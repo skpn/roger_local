@@ -44,19 +44,19 @@ echo -e "\n\nscript log file: $log_file\n\n"
 
 exec &> $log_file
 
-bash setup_script_packages.sh
+bash setup_packages.sh
 
-bash setup_script_user.sh $username
+bash setup_user.sh $username
 
-bash setup_script_ssh.sh $host_key
+bash setup_ssh.sh $username $host_key
 
-bash setup_script_network.sh
+bash setup_network.sh
 
-bash setup_script_firewall.sh
+bash setup_firewall.sh
 
-bash setup_script_services.sh
+bash setup_services.sh
 
-bash setup_script_cronjobs.sh
+bash setup_cronjobs.sh
 
 ################################################################################
 ### exit setup
