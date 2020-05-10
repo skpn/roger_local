@@ -2,11 +2,12 @@
 repo="https://raw.githubusercontent.com/skpn/roger_local/master/"
 
 function get_file() {
-	rm -f $1
-	wget_url=$repo$1
-	wget -q -O setup/$1 $wget_url
-	if [ ! -f setup/$1 ]; then
-		echo -e "could not get file $1"
+	file=$(find . -type f -name "$1")
+	rm -f $file
+	wget_url=$repo$file
+	wget -q -O setup/$file $wget_url
+	if [ ! -f setup/$file ]; then
+		echo -e "could not get file $file"
 		exit 1
 	fi
 }
