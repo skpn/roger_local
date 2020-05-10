@@ -50,26 +50,26 @@ function launch_subscript() {
 	bash $subscript $subscript_args
 }
 
-bash setup_packages.sh
+launch_subscript setup_packages.sh
 
-bash setup_user.sh $username
+launch_subscript setup_user.sh $username
 
-bash setup_ssh.sh $username $host_key
+launch_subscript setup_ssh.sh $username $host_key
 exit 1
-bash setup_network.sh
+launch_subscript setup_network.sh
 
-bash setup_firewall.sh
+launch_subscript setup_firewall.sh
 
-bash setup_services.sh
+launch_subscript setup_services.sh
 
-bash setup_cronjobs.sh
+launch_subscript setup_cronjobs.sh
 
 ################################################################################
 ### exit setup
 ################################################################################
 
 ###
-echo "" >> $log_file
+echo ""
 
 echo -e "\n\nVM set up, exiting - script log file: $log_file\n\n"
 exit 1
