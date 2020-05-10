@@ -11,9 +11,9 @@ sed -i 's/^deb cdrom/# deb cdrom/g' /etc/apt/sources.list
 
 ###
 echo -e "pre-setting options for package installation"
-echo -e "iptables-persistent iptables-persistent/autosave_v4 boolean "
+echo -e "iptables-persistent iptables-persistent/autosave_v4 boolean "\
 	"true" | debconf-set-selections
-echo -e "iptables-persistent iptables-persistent/autosave_v6 boolean "
+echo -e "iptables-persistent iptables-persistent/autosave_v6 boolean "\
 	"true" | debconf-set-selections
 
 ###
@@ -28,3 +28,5 @@ apt -y -qq install iptables-persistent
 apt -y -qq install git
 apt -y -qq install vim
 apt -y -qq install incron
+apt -y -qq install ssh
+apt -y -qq install mailutils
