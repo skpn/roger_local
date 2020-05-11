@@ -28,7 +28,9 @@ sudo ip6tables -P OUTPUT ACCEPT
 
 
 ### rejecting all traffic
+sudo iptables -A INPUT -j LOG --log-prefix=iptables:
 sudo iptables -A INPUT -j REJECT
+sudo iptables -A OUTPUT -j LOG --log-prefix=iptables:
 sudo iptables -A OUTPUT -j REJECT
 sudo iptables -A FORWARD -j REJECT
 
@@ -43,7 +45,7 @@ sudo iptables -I OUTPUT -p tcp -m multiport --dports 50000,80,25 -j ACCEPT
 ### accepting 5 icmp protocol inbound pings per second up to 1000 pings
 sudo iptables -I INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
 
-### accepting icmp protocol outound pings
+### accepting icmp protocol outbound pings
 sudo iptables -I OUTPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
 
 ### accepting 1 connection attempt to the ssh (50000), http (80), and smtp (25)
