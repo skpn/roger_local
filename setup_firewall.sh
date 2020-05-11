@@ -40,8 +40,11 @@ sudo ip6tables -A FORWARD -j REJECT
 ### accepting output traffic from the ssh, http, and smtp ports
 sudo iptables -I OUTPUT -p tcp -m multiport --dports 50000,80,25 -j ACCEPT
 
-### accepting ping 5 icmp protocol pings per second up to 1000 pings
+### accepting 5 icmp protocol inbound pings per second up to 1000 pings
 sudo iptables -I INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
+
+### accepting icmp protocol outound pings
+sudo iptables -I OUTPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
 
 ### accepting 1 connection attempt to the ssh (50000), http (80), and smtp (25)
 ### ports per second up to 120 attempts per ip address
