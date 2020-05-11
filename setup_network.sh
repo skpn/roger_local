@@ -10,6 +10,7 @@ echo -e "getting current IP and gateway to re-use in static interface "\
 	"configuration"
 
 ipaddr=$(ip addr show enp0s3 | awk '{ if ($1 == "inet") print $2}')
+ipaddr=${ipaddr%/*}
 gateway=$(ip route show default | awk '{ print $3 }')
 network_conf=/etc/network/interfaces
 
