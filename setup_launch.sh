@@ -30,7 +30,7 @@ fi
 if [ -z $username ]; then
 	echo -e "Config file '$setup_source' is missing 'username' variable"
 	exit 1
-elif [ -z $host_key ]; then
+elif [ -z "$host_key" ]; then
 	echo -e "Config file '$setup_source' is missing 'host_key' variable"
 	exit 1
 fi

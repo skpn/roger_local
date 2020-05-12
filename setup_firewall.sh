@@ -5,6 +5,9 @@
 
 echo -e "\n\nsetting up firewall rules\n\n"
 
+### the rules at the start of the chain are consulted first, so they have higher
+### priority
+### inserting a rule puts it at the start of a chain, appending it at the end
 ### we start by appending rules that reject all traffic ; then we insert rules
 ### that accept the packets we want
 
@@ -27,10 +30,10 @@ sudo ip6tables -P FORWARD DROP
 sudo ip6tables -P OUTPUT ACCEPT
 
 
-### rejecting all traffic
-sudo iptables -A INPUT -j LOG --log-prefix=iptables:
+### rejecting all traffic after logging it
+sudo iptables -I INPUT -j LOG --log-prefix=iptables_reject:
+sudo iptables -I OUTPUT -j LOG --log-prefix=iptables_reject:
 sudo iptables -A INPUT -j REJECT
-sudo iptables -A OUTPUT -j LOG --log-prefix=iptables:
 sudo iptables -A OUTPUT -j REJECT
 sudo iptables -A FORWARD -j REJECT
 
@@ -39,25 +42,26 @@ sudo ip6tables -A OUTPUT -j REJECT
 sudo ip6tables -A FORWARD -j REJECT
 
 
-### accepting output traffic from the ssh, http, and smtp ports
-sudo iptables -I OUTPUT -p tcp -m multiport --dports 50000,80,25 -j ACCEPT
+### accepting icmp protocol outbound pings
+sudo iptables -I OUTPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
 
 ### accepting 5 icmp protocol inbound pings per second up to 1000 pings
 sudo iptables -I INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
 
-### accepting icmp protocol outbound pings
-sudo iptables -I OUTPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
-
 ### accepting 1 connection attempt to the ssh (50000), http (80), and smtp (25)
 ### ports per second up to 120 attempts per ip address
-sudo iptables -I PREROUTING  -p tcp --syn -m conntrack --ctstate NEW -m limit --limit 10/minute --limit-burst 120 -m multiport --dports 50000,80,25 -j ACCEPT
+sudo iptables -I INPUT --syn -m conntrack --ctstate NEW -m limit --limit 10/minute --limit-burst 120 -m multiport --dports 50000,80,25 -j ACCEPT
 
 ### accepting loopback packets
+sudo iptables -I OUTPUT -i lo -j ACCEPT
 sudo iptables -I INPUT -i lo -j ACCEPT
 
-### accepting established connections and connections from related machines
-sudo iptables -I PREROUTING -p tcp -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+### accepting established and related connections
+sudo iptables -I INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+### accepting all output traffic from the ssh, http, and smtp ports
+sudo iptables -I OUTPUT -m multiport --dports 50000,80,25 -j ACCEPT
 
 ### making iptable configuration persistent
-sudo iptables-save > /etc/sudo iptables/rules.v4
-sudo ip6tables-save > /etc/sudo iptables/rules.v6
+sudo iptables-save > /etc/iptables/rules.v4
+sudo ip6tables-save > /etc/iptables/rules.v6
