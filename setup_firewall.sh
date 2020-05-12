@@ -12,7 +12,7 @@ echo -e "\n\nsetting up firewall rules\n\n"
 ### that accept the packets we want
 
 ### create specific log file for iptables
-echo "kern.warning /var/log/iptables.log" > /etc/rsyslog.conf
+echo "kern.warning /var/log/iptables.log" >> /etc/rsyslog.conf
 service rsyslog restart
 
 ### flushing all previous ipv4 rules
@@ -35,8 +35,8 @@ sudo ip6tables -P OUTPUT ACCEPT
 
 
 ### rejecting all traffic after logging it
-sudo iptables -I INPUT -j LOG --log-prefix=iptables_reject:
-sudo iptables -I OUTPUT -j LOG --log-prefix=iptables_reject:
+sudo iptables -I INPUT -j LOG --log-level 4 --log-prefix=iptables_reject:
+sudo iptables -I OUTPUT -j LOG --log-level 4 --log-prefix=iptables_reject:
 sudo iptables -A INPUT -j REJECT
 sudo iptables -A OUTPUT -j REJECT
 sudo iptables -A FORWARD -j REJECT
@@ -54,7 +54,7 @@ sudo iptables -I INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 5/s --limi
 
 ### accepting 1 connection attempt to the ssh (50000), http (80), and smtp (25)
 ### ports per second up to 120 attempts per ip address
-sudo iptables -I INPUT -m conntrack --ctstate NEW -m limit --limit 10/minute --limit-burst 120 -m multiport --dports 50000,80,25 -j ACCEPT
+sudo iptables -I INPUT -p tcp -m multiport --dports 50000,80,25 -m conntrack --ctstate NEW -m limit --limit 10/minute --limit-burst 120 -j ACCEPT
 
 ### accepting loopback packets and excluding packets from loopback from a
 ### different machine

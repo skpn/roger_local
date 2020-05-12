@@ -27,3 +27,4 @@ echo -e "setting static ip address $ip_addr and gateway $gateway"
 echo -e "\taddress $ip_addr/30" >> $network_conf
 echo -e "\tgateway $gateway" >> $network_conf
 
+service networking restart
