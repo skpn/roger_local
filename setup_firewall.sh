@@ -11,6 +11,10 @@ echo -e "\n\nsetting up firewall rules\n\n"
 ### we start by appending rules that reject all traffic ; then we insert rules
 ### that accept the packets we want
 
+### create specific log file for iptables
+echo "kern.warning /var/log/iptables.log" > /etc/rsyslog.conf
+service rsyslog restart
+
 ### flushing all previous ipv4 rules
 sudo iptables -F
 sudo iptables -X
@@ -50,17 +54,19 @@ sudo iptables -I INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 5/s --limi
 
 ### accepting 1 connection attempt to the ssh (50000), http (80), and smtp (25)
 ### ports per second up to 120 attempts per ip address
-sudo iptables -I INPUT --syn -m conntrack --ctstate NEW -m limit --limit 10/minute --limit-burst 120 -m multiport --dports 50000,80,25 -j ACCEPT
+sudo iptables -I INPUT -m conntrack --ctstate NEW -m limit --limit 10/minute --limit-burst 120 -m multiport --dports 50000,80,25 -j ACCEPT
 
-### accepting loopback packets
-sudo iptables -I OUTPUT -i lo -j ACCEPT
+### accepting loopback packets and excluding packets from loopback from a
+### different machine
+ip_addr=$(ip addr show enp0s3 | awk '{ if ($1 == "inet") print $2}')
 sudo iptables -I INPUT -i lo -j ACCEPT
+sudo iptables -I INPUT ! -i lo -s $ip_addr -j REJECT
 
 ### accepting established and related connections
 sudo iptables -I INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ### accepting all output traffic from the ssh, http, and smtp ports
-sudo iptables -I OUTPUT -m multiport --dports 50000,80,25 -j ACCEPT
+sudo iptables -I OUTPUT -p tcp -m multiport --dports 50000,80,25 -j ACCEPT
 
 ### making iptable configuration persistent
 sudo iptables-save > /etc/iptables/rules.v4
