@@ -12,7 +12,7 @@ echo -e "\n\nsetting up firewall rules\n\n"
 ### that accept the packets we want
 
 ### create specific log file for iptables
-echo "kern.warning /var/log/iptables.log" >> /etc/rsyslog.conf
+echo ":msg,contains,\"iptables_reject \" /var/log/iptables.log" >> /etc/rsyslog.conf
 service rsyslog restart
 
 ### flushing all previous ipv4 rules
@@ -53,17 +53,20 @@ sudo iptables -I OUTPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
 sudo iptables -I INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
 
 ### accepting 1 connection attempt to the ssh (50000), http (80), and smtp (25)
-### ports per second up to 120 attempts per ip address
-sudo iptables -I INPUT -p tcp -m multiport --dports 50000,80,25 -m conntrack --ctstate NEW -m limit --limit 10/minute --limit-burst 120 -j ACCEPT
+### ports per second up to 120 attempts
+sudo iptables -I INPUT -p tcp -m multiport --dports 50000,80,25 -m conntrack --ctstate NEW -m limit --limit 1/s --limit-burst 300 -j LOG --log-level 4 --log-prefix=iptables_new:
+sudo iptables -I INPUT -p tcp -m multiport --dports 50000,80,25 -m conntrack --ctstate NEW -m limit --limit 1/s --limit-burst 300 -j ACCEPT
 
 ### accepting loopback packets and excluding packets from loopback from a
 ### different machine
 ip_addr=$(ip addr show enp0s3 | awk '{ if ($1 == "inet") print $2}')
 sudo iptables -I INPUT -i lo -j ACCEPT
 sudo iptables -I INPUT ! -i lo -s $ip_addr -j REJECT
+sudo iptables -I OUTPUT -i lo -j ACCEPT
 
 ### accepting established and related connections
-sudo iptables -I INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -I INPUT  -p tcp -m multiport --dports 50000,80,25 -m conntrack --ctstate ESTABLISHED,RELATED -j LOG --log-level 4 --log-prefix=iptables_est_rel:
+sudo iptables -I INPUT  -p tcp -m multiport --dports 50000,80,25 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ### accepting all output traffic from the ssh, http, and smtp ports
 sudo iptables -I OUTPUT -p tcp -m multiport --dports 50000,80,25 -j ACCEPT
