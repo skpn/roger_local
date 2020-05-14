@@ -12,8 +12,10 @@ echo -e "\n\nsetting up firewall rules\n\n"
 ### that accept the packets we want
 
 ### create specific log file for iptables
-echo ":msg,contains,\"iptables_reject \" /var/log/iptables.log" >> /etc/rsyslog.conf
-service rsyslog restart
+if [ -z $(grep 'iptables_' /etc/rsyslog.conf)]; then
+	echo ":msg,contains,\"iptables_\" /var/log/iptables.log" >> /etc/rsyslog.conf
+	service rsyslog restart
+fi
 
 ### flushing all previous ipv4 rules
 sudo iptables -F
