@@ -12,7 +12,7 @@ echo -e "\n\nsetting up firewall rules\n\n"
 ### that accept the packets we want
 
 ### create specific log file for iptables
-if [ -z $(grep 'iptables_' /etc/rsyslog.conf)]; then
+if [ -z "$(grep 'iptables_' /etc/rsyslog.conf)"]; then
 	echo ":msg,contains,\"iptables_\" /var/log/iptables.log" >> /etc/rsyslog.conf
 	service rsyslog restart
 fi
@@ -48,11 +48,12 @@ sudo ip6tables -A OUTPUT -j REJECT
 sudo ip6tables -A FORWARD -j REJECT
 
 
-### accept icmp protocol outbound pings
-sudo iptables -I OUTPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
+### accept icmp protocol outbound traffic
+sudo iptables -I OUTPUT -p icmp -j ACCEPT
 
-### accept 5 icmp protocol inbound pings per second up to 1000 pings
-sudo iptables -I INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
+### accept 5 icmp protocol inbound packets per second up to 1000 packets
+sudo iptables -I INPUT -p icmp -m icmp --icmp-type echo-request -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
+sudo iptables -I INPUT -p icmp -m icmp --icmp-type echo-reply -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
 
 ### accept 1 connection attempt to the ssh (50000), http (80), and smtp (25)
 ### ports per second up to 120 attempts
