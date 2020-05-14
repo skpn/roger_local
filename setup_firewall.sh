@@ -49,7 +49,8 @@ sudo ip6tables -A FORWARD -j REJECT
 
 
 ### accept icmp protocol outbound traffic
-sudo iptables -I OUTPUT -p icmp -j ACCEPT
+sudo iptables -I OUTPUT -p icmp -m icmp --icmp-type echo-request -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
+sudo iptables -I OUTPUT -p icmp -m icmp --icmp-type echo-reply -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
 
 ### accept 5 icmp protocol inbound packets per second up to 1000 packets
 sudo iptables -I INPUT -p icmp -m icmp --icmp-type echo-request -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
