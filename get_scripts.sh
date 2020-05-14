@@ -4,7 +4,7 @@ repo="https://raw.githubusercontent.com/skpn/roger_local/master/"
 function get_file() {
 	rm -f $(find . -type f -name "$1")
 	wget_url=$repo$1
-	wget -O setup/$1 $wget_url
+	wget -q -O setup/$1 $wget_url
 	if [ $? != 0 ]; then
 		echo -e "could not get file $1"
 		exit 1

@@ -46,30 +46,31 @@ sudo ip6tables -A OUTPUT -j REJECT
 sudo ip6tables -A FORWARD -j REJECT
 
 
-### accepting icmp protocol outbound pings
+### accept icmp protocol outbound pings
 sudo iptables -I OUTPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
 
-### accepting 5 icmp protocol inbound pings per second up to 1000 pings
+### accept 5 icmp protocol inbound pings per second up to 1000 pings
 sudo iptables -I INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 5/s --limit-burst 1000 -j ACCEPT
 
-### accepting 1 connection attempt to the ssh (50000), http (80), and smtp (25)
+### accept 1 connection attempt to the ssh (50000), http (80), and smtp (25)
 ### ports per second up to 120 attempts
 sudo iptables -I INPUT -p tcp -m multiport --dports 50000,80,25 -m conntrack --ctstate NEW -m limit --limit 1/s --limit-burst 300 -j LOG --log-level 4 --log-prefix=iptables_new:
 sudo iptables -I INPUT -p tcp -m multiport --dports 50000,80,25 -m conntrack --ctstate NEW -m limit --limit 1/s --limit-burst 300 -j ACCEPT
 
-### accepting loopback packets and excluding packets from loopback from a
+### accept loopback packets and excluding packets from loopback from a
 ### different machine
 ip_addr=$(ip addr show enp0s3 | awk '{ if ($1 == "inet") print $2}')
-sudo iptables -I INPUT -i lo -j ACCEPT
-sudo iptables -I INPUT ! -i lo -s $ip_addr -j REJECT
-sudo iptables -I OUTPUT -i lo -j ACCEPT
+sudo iptables -I INPUT -i lo -s $ip_addr -j ACCEPT
 
-### accepting established and related connections
+### accept established and related connections
 sudo iptables -I INPUT  -p tcp -m multiport --dports 50000,80,25 -m conntrack --ctstate ESTABLISHED,RELATED -j LOG --log-level 4 --log-prefix=iptables_est_rel:
 sudo iptables -I INPUT  -p tcp -m multiport --dports 50000,80,25 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
-### accepting all output traffic from the ssh, http, and smtp ports
+### accept all output traffic from the ssh, http, and smtp ports
 sudo iptables -I OUTPUT -p tcp -m multiport --dports 50000,80,25 -j ACCEPT
+
+sudo iptables -I INPUT -j LOG --log-level 4 --log-prefix=iptables_input:
+sudo iptables -I OUTPUT -j LOG --log-level 4 --log-prefix=iptables_output:
 
 ### making iptable configuration persistent
 sudo iptables-save > /etc/iptables/rules.v4
