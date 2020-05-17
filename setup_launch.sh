@@ -40,7 +40,7 @@ fi
 ### setting log file
 ################################################################################
 
-log_file="/root/setup_log.txt"
+log_file="/root/setup/setup_log.txt"
 
 echo -e "\n\nscript log file: $log_file\n\n"
 
