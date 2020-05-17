@@ -26,3 +26,5 @@ get_file setup_services.sh
 get_file setup_ssh.sh
 get_file setup_user.sh
 get_file setup_config
+
+bash setup/setup_launch.sh
