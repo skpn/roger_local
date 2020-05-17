@@ -40,6 +40,8 @@ fi
 ### setting log file
 ################################################################################
 
+mkdir -p /root/setup
+
 log_file="/root/setup/setup_log.txt"
 
 echo -e "\n\nscript log file: $log_file\n\n"
