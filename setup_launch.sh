@@ -61,7 +61,7 @@ launch_subscript setup_user.sh $username
 launch_subscript setup_ssh.sh $setup_source
 
 launch_subscript setup_network.sh
-exit 1
+
 launch_subscript setup_firewall.sh
 
 launch_subscript setup_services.sh

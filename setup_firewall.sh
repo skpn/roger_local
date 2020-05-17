@@ -53,8 +53,8 @@ sudo iptables -A INPUT -p icmp -m icmp --icmp-type echo-reply -m limit --limit 5
 
 ### reject invalid packets
 sudo iptables -t mangle -A PREROUTING -m conntrack --ctstate INVALID -j DROP
-sudo iptables -t mangle -A PREROUTING -p tcp ! -syn -m conntrack --ctstate NEW -j DROP
-sudo iptables -t mangle -A PREROUTING -p tcp -m connlimit -connlimit-above 50 -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp ! --syn -m conntrack --ctstate NEW -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp -m connlimit --connlimit-above 50 -j DROP
 sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL ALL -j DROP
 sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
 sudo iptables -t mangle -A PREROUTING -f -j DROP
@@ -68,7 +68,7 @@ sudo iptables -A INPUT -p tcp -m multiport --dports 50000,80,443,25 -m conntrack
 
 
 ### rejecting all remaining traffic after logging it
-sudo iptables -A INPUT -m limit --limit 20/minute --limit-burst 60 -j LOG -log-level 4 -log-prefix=iptables_reject:
+sudo iptables -A INPUT -m limit --limit 20/minute --limit-burst 60 -j LOG --log-level 4 --log-prefix=iptables_reject:
 sudo iptables -A INPUT -j REJECT
 sudo iptables -A FORWARD -j REJECT
 
