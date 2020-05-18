@@ -10,6 +10,9 @@ echo -e "\n\nsetting up firewall rules\n\n"
 ### inserting a rule puts it at the start of a chain, appending it at the end
 ### we start by appending rules that reject all traffic ; then we insert rules
 ### that accept the packets we want
+### necessary ports: 21 (FTP), 25 (SMTP), 53 (DNS), 80 (HTTP), 443 (HTTPS),
+### 50000 (custom SSH)
+multiports="-m multiports --dports 21,25,53,80,443,50000"
 
 ### create specific log file for iptables
 if [ -z "$(grep 'iptables_' /etc/rsyslog.conf)" ]; then
@@ -40,9 +43,8 @@ sudo ip6tables -P OUTPUT ACCEPT
 ### - accept all outbound traffic ;
 ### - accept 5 inbound and 5 outbound icmp packets per secound ;
 
-### accept established/related inbound traffic to the the ssh, http[s], and smtp ports
-#sudo iptables -I INPUT  -p tcp -m multiport --dports 50000,80,443,25 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-sudo iptables -A INPUT -p tcp -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+### accept established/related inbound traffic to the necessary ports
+sudo iptables -A INPUT $multiports -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ### accept outbound traffic
 sudo iptables -A OUTPUT -j ACCEPT
@@ -53,10 +55,10 @@ sudo iptables -A INPUT -p icmp -m icmp --icmp-type echo-reply -m limit --limit 5
 
 ### reject invalid packets
 sudo iptables -t mangle -A PREROUTING -m conntrack --ctstate INVALID -j DROP
-sudo iptables -t mangle -A PREROUTING -p tcp ! --syn -m conntrack --ctstate NEW -j DROP
-sudo iptables -t mangle -A PREROUTING -p tcp -m connlimit --connlimit-above 50 -j DROP
-sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL ALL -j DROP
-sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
+sudo iptables -t mangle -A PREROUTING ! --syn -m conntrack --ctstate NEW -j DROP
+sudo iptables -t mangle -A PREROUTING -m connlimit --connlimit-above 50 -j DROP
+sudo iptables -t mangle -A PREROUTING --tcp-flags ALL ALL -j DROP
+sudo iptables -t mangle -A PREROUTING --tcp-flags ALL NONE -j DROP
 sudo iptables -t mangle -A PREROUTING -f -j DROP
 
 ### accept loopback packets
@@ -64,7 +66,8 @@ sudo iptables -A INPUT -i lo -j ACCEPT
 
 ### accept 1 connection attempt to the ssh (50000), http[s] (80,[443]), and smtp (25)
 ### ports per second up to 120 attempts
-sudo iptables -A INPUT -p tcp -m multiport --dports 50000,80,443,25 -m conntrack --ctstate NEW -m limit --limit 4/s --limit-burst 300 -j ACCEPT
+sudo iptables -A INPUT -p tcp $multiports -m conntrack --ctstate NEW -m limit --limit 4/s --limit-burst 300 -j ACCEPT
+sudo iptables -A INPUT -p udp $multiports -m conntrack --ctstate NEW -m limit --limit 4/s --limit-burst 300 -j ACCEPT
 
 
 ### rejecting all remaining traffic after logging it
