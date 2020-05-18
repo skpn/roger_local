@@ -55,14 +55,28 @@ sudo iptables -A INPUT -p icmp -m icmp --icmp-type echo-reply -m limit --limit 5
 
 ### reject invalid packets
 sudo iptables -t mangle -A PREROUTING -m conntrack --ctstate INVALID -j DROP
-sudo iptables -t mangle -A PREROUTING ! --syn -m conntrack --ctstate NEW -j DROP
 sudo iptables -t mangle -A PREROUTING -m connlimit --connlimit-above 50 -j DROP
-sudo iptables -t mangle -A PREROUTING --tcp-flags ALL ALL -j DROP
-sudo iptables -t mangle -A PREROUTING --tcp-flags ALL NONE -j DROP
+sudo iptables -t mangle -A PREROUTING -m conntrack --ctstate NEW ! --syn -j DROP
 sudo iptables -t mangle -A PREROUTING -f -j DROP
-
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL ALL -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -j DROP 
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,SYN FIN,SYN -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,RST FIN,RST -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,ACK FIN -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ACK,URG URG -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ACK,FIN FIN -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ACK,PSH PSH -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL ALL -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,FIN,PSH,URG -j DROP
+sudo iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP
 ### accept loopback packets
+ip_addr=$(ip addr show lo | awk '{ if ($1 == "inet") print $2}')
 sudo iptables -A INPUT -i lo -j ACCEPT
+sudo iptables -A INPUT ! -i lo -s $loopback_ip -j REJECT
 
 ### accept 1 connection attempt to the ssh (50000), http[s] (80,[443]), and smtp (25)
 ### ports per second up to 120 attempts
