@@ -19,7 +19,7 @@ fi
 if [ -f $setup_source ]; then
 	source $setup_source
 else
-	echo -e "Configuration file '$setup_source' was not found.\nYou can provide"\
+	echo -e "Configuration file '$setup_source' not found.\nYou can provide "\
 		"the path to a config file like so: ./setup_scrip path/to/file.\nThe "\
 		"config file must contain the definitons of the 'username' (the new"\
 		"sudo user) and 'host_key' (the ssh public key that will be used to "\

@@ -12,12 +12,6 @@ sed -i 's/^deb cdrom/# deb cdrom/g' /etc/apt/sources.list
 ###
 echo -e "pre-setting options for package installation"
 
-#echo -e "pre-setting options for package installation"
-#echo -e "iptables-persistent iptables-persistent/autosave_v4 boolean "\
-	"true" | debconf-set-selections
-#echo -e "iptables-persistent iptables-persistent/autosave_v6 boolean "\
-	"true" | debconf-set-selections
-
 debconf --priority=critical iptables-persistent
 debconf --priority=critical portsentry
 
@@ -35,6 +29,5 @@ apt -y -qq install ufw
 apt -y -qq install fail2ban
 apt -y -qq install portsentry
 apt -y -qq install ssh
-#apt -y -qq install iptables-persistent
 apt -y -qq install incron
 apt -y -qq install mailutils

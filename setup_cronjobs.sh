@@ -3,27 +3,30 @@
 ### sources update script
 ################################################################################
 
-update_sh="/root/update_script.sh"
-update_cmd="bash $update_sh"
+update_script="/root/update_script.sh"
 update_log="/var/log/update_script.log"
 
 ###
-echo -ne "creating apt source update logging script "
-echo -e "(script: $update_sh, log file: $update_log)"
-echo -e 'apt -y update && apt -y upgrade' > update_sh
+echo -ne "creating apt source update logging script (script: $update_script, log "\
+	"file: $update_log)"
+echo -e "apt -y update > $update_log" > $update_script
+echo -e "apt -y upgrade > $update_log" > $update_script
 
 ###
 echo -e "setting system crontab to run update script at boot and 4AM"
-sed -i 's/^#$//g' /etc/crontab
-echo -e "0 4 * * *\troot\t$update_cmd" >> /etc/crontab
-echo -e "@reboot\t\troot\t$update_cmd" >> /etc/crontab
+echo -e "0 4 * * *		root	bash $update_script" >> /etc/crontab
+echo -e "@reboot		root	bash $update_script" >> /etc/crontab
 
 
 ################################################################################
 ### file surveillance script
 ################################################################################
 
-echo -e "\n\nsetting alert on crontab modification\n\n"
+echo -e "
+
+setting alert on crontab modification
+
+"
 
 ###
 file="/etc/crontab"
@@ -37,5 +40,5 @@ sed -i 's/root:/#root:/' /etc/aliases
 newaliases
 
 ## setting incron
-echo root >> /etc/incron.allow
-echo "$file IN_MODIFY mail -s $subject root < /dev/null" >> /etc/incron.d/root
+echo -e "root" >> /etc/incron.allow
+echo -e "$file IN_MODIFY mail -s \"$subject\" root < /dev/null" >> /etc/incron.d/root
