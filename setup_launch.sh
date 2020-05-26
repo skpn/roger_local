@@ -46,14 +46,12 @@ log_file="/root/setup/setup_log.txt"
 
 echo -e "\n\nsetting up vm\n\nscript log file: $log_file\n\n"
 
-exec &> $log_file
-
 function launch_subscript() {
 	subscript=$(find . -type f -name "$1")
 	if [ "$#" -gt 1 ]; then
 		subscript_args="${@:2}"
 	fi
-	bash $subscript $subscript_args
+	bash $subscript $subscript_args 2>&1 | tee -a $log_file
 }
 
 launch_subscript setup_packages.sh
@@ -78,7 +76,6 @@ launch_subscript setup_cronjobs.sh
 echo ""
 
 echo -e "\n\nVM set up - script log file: $log_file\n\n"
-exit 1
 
 echo -ne "choose new password for sudouser: "
 
