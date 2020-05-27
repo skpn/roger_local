@@ -7,6 +7,10 @@ echo -e "\n\nsetting up firewall rules\n\n"
 
 sudo ufw enable
 
+### set default policy
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
 ### allow necessary ports: FTP (20, 21), SMTP(25), DNS (53), HTTP (80),
 ### HTTPS (443), custom SSH (50000)
 sudo ufw allow 20/tcp
@@ -24,7 +28,7 @@ sudo ufw reload
 sudo echo -e "
 [sshd]
 enabled = true
-port    = 42
+port    = 50000
 logpath = %(sshd_log)s
 backend = %(sshd_backend)s
 maxretry = 3
@@ -34,7 +38,7 @@ bantime = 600
 enabled = true
 port = http,https
 filter = http-get-dos
-logpath = /var/log/apache2/access.log (le fichier d'access sur server web)
+logpath = /var/log/apache2/access.log
 maxretry = 300
 findtime = 300
 bantime = 600
@@ -48,18 +52,3 @@ ignoreregex =
 " > /etc/fail2ban/http-get-dos.conf
 
 sudo service fail2ban restart
-
-### edit portsentry configuration files
-
-sudo portsentry enable
-
-sudo sed -i 's/TCP_MODE="tcp"/TCP_MODE="atcp"/g' /etc/default/portsentry
-sudo sed -i 's/UDP_MODE="udp"/UDP_MODE="audp"/g' /etc/default/portsentry
-
-sudo sed -i 's/BLOCK_TCP="0"/BLOCK_TCP="1"/g' /etc/portsentry/portsentry.conf
-sudo sed -i 's/BLOCK_UDP="0"/BLOCK_UDP="1"/g' /etc/portsentry/portsentry.conf
-
-sudo sed -i 's/^KILL/^#KILL/g' /etc/portsentry/portsentry.conf
-sudo sed -i 's/#KILL_ROUTE="/sbin/iptables -I INPUT -s $TARGET$ -j DROP"/KILL_ROUTE="/sbin/iptables -I INPUT -s $TARGET$ -j DROP"/g' /etc/portsentry/portsentry.conf
-
-sudo service portsentry restart

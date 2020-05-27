@@ -10,11 +10,6 @@ echo -e "setting the source list to the debian mirror"
 sed -i 's/^deb cdrom/# deb cdrom/g' /etc/apt/sources.list
 
 ###
-echo -e "pre-setting options for package installation"
-
-debconf --priority=critical iptables-persistent
-debconf --priority=critical portsentry
-
 ###
 echo -e "updating sources, upgrading, installing necessary packages"
 
@@ -27,7 +22,6 @@ apt -y -qq install git
 apt -y -qq install vim
 apt -y -qq install ufw
 apt -y -qq install fail2ban
-apt -y -qq install portsentry
 apt -y -qq install ssh
 apt -y -qq install incron
 apt -y -qq install mailutils
