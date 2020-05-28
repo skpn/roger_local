@@ -22,8 +22,9 @@ else
 	echo -e "Configuration file '$setup_source' not found.\nYou can provide "\
 		"the path to a config file like so: ./setup_scrip path/to/file.\nThe "\
 		"config file must contain the definitons of the 'username' (the new"\
-		"sudo user) and 'host_key' (the ssh public key that will be used to "\
-		"connect to the machine after the setup) variables"
+		"sudo user), 'ssh_port' (the new ssh port number) and 'host_key' (the "\
+		"ssh public key that will be used to connect to the machine after the "\
+		"setup) variables"
 	exit 1
 fi
 
@@ -32,6 +33,9 @@ if [ -z $username ]; then
 	exit 1
 elif [ -z "$host_key" ]; then
 	echo -e "Config file '$setup_source' is missing 'host_key' variable"
+	exit 1
+elif [ -z "$ssh_port" ]; then
+	echo -e "Config file '$setup_source' is missing '$ssh_port' variable"
 	exit 1
 fi
 
@@ -62,7 +66,7 @@ launch_subscript setup_ssh.sh $setup_source
 
 launch_subscript setup_network.sh
 
-launch_subscript setup_firewall.sh
+launch_subscript setup_firewall.sh $ssh_port
 
 launch_subscript setup_services.sh
 

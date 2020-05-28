@@ -3,6 +3,8 @@
 ### firewall config
 ################################################################################
 
+ssh_port=$1
+
 echo -e "\n\nsetting up firewall rules\n\n"
 
 sudo ufw enable
@@ -12,14 +14,10 @@ sudo ufw default deny incoming
 sudo ufw default allow outgoing
 
 ### allow necessary ports: FTP (20, 21), SMTP(25), DNS (53), HTTP (80),
-### HTTPS (443), custom SSH (50000)
-sudo ufw allow 20/tcp
-sudo ufw allow 21/tcp
-sudo ufw allow 25
-sudo ufw allow 53
-sudo ufw allow 80/tcp
-sudo ufw allow 443
-sudo ufw allow 50000/tcp
+### HTTPS (443), custom SSH ($ssh_port)
+sudo ufw allow from any to any 20,21,25,53
+sudo ufw allow from any to any proto tcp 80,443,$ssh_port
+sudo ufw limit from any to any 20,21,25,53,80,443,$ssh_port
 
 sudo ufw reload
 
@@ -27,23 +25,41 @@ sudo ufw reload
 
 sudo echo -e "
 [sshd]
+backend = auto
 enabled = true
-port    = 50000
-logpath = %(sshd_log)s
-backend = %(sshd_backend)s
-maxretry = 3
+port = $ssh_port
+filter = sshd
+logpath = /var/log/syslog
+findtime = 300
 bantime = 600
+maxretry = 3
+
+[portscan]
+backend = auto
+enabled = true
+filter = portscan
+logpath = /var/log/syslog
+findtime = 300
+bantime = 600
+maxretry = 1
 
 [http-get-dos]
+backend = auto
 enabled = true
 port = http,https
 filter = http-get-dos
 logpath = /var/log/apache2/access.log
-maxretry = 300
+maxretry = 100
 findtime = 300
 bantime = 600
 action = iptables[name=HTTP, port=http, protocol=tcp]
 " > /etc/fail2ban/jail.local
+
+echo -e "
+[Definition]
+failregex = UFW BLOCK.* SRC=<HOST>
+ignoreregex =
+" > /etc/fail2ban/portscan.conf
 
 echo -e "
 [Definition]

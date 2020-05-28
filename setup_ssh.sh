@@ -10,8 +10,8 @@ ssh_conf="/etc/ssh/sshd_config"
 source $1
 
 ###
-echo -e "changing default ssh port to 50000"
-sed -i "s/#Port 22/Port 50000/" $ssh_conf
+echo -e "changing default ssh port to $ssh_port"
+sed -i "s/#Port 22/Port $ssh_port/" $ssh_conf
 
 ###
 echo -e "allowing ssh authentication via public keys"
