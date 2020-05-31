@@ -15,9 +15,8 @@ sudo ufw default allow outgoing
 
 ### allow necessary ports: FTP (20, 21), SMTP(25), DNS (53), HTTP (80),
 ### HTTPS (443), custom SSH ($ssh_port)
-sudo ufw allow from any to any 20,21,25,53
 sudo ufw allow from any to any proto tcp 80,443,$ssh_port
-sudo ufw limit from any to any 20,21,25,53,80,443,$ssh_port
+sudo ufw limit from any to any 80,443,$ssh_port
 
 sudo ufw reload
 

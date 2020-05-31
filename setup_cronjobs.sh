@@ -7,10 +7,10 @@ update_script="/root/update_script.sh"
 update_log="/var/log/update_script.log"
 
 ###
-echo -ne "creating apt source update logging script (script: $update_script, log "\
-	"file: $update_log)"
+echo -ne "creating apt source update logging script (script: $update_script, "\
+	"log file: $update_log)"
 echo -e "apt -y update > $update_log" > $update_script
-echo -e "apt -y upgrade > $update_log" > $update_script
+echo -e "apt -y upgrade >> $update_log" >> $update_script
 
 ###
 echo -e "setting system crontab to run update script at boot and 4AM"
