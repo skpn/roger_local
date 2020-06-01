@@ -5,7 +5,7 @@
 
 ssh_port=$1
 
-echo -e "\n\nsetting up firewall rules\n\n"
+echo -e "\n\nsetting up firewall rules (ssh port: $ssh_port)\n\n"
 
 sudo ufw enable
 
