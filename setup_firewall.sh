@@ -28,8 +28,9 @@ sudo ufw limit $ssh_port/tcp
 
 sudo ufw reload
 
-### closing ports that stay open on nmap
-sudo iptables -I raw -t PREROUTING -p tcp --dport 25,110,119,143,465,563,587,993,995 -j DROP
+### closing ports that stay open on nmap and dropping all icmp
+#sudo iptables -t raw -I PREROUTING -p tcp ! --dport 25,110,119,143,465,563,587,993,995 -j DROP
+#sudo iptables -t raw -I PREROUTING -p icmp -j DROP
 
 ### create custom configuration file for fail2ban
 
