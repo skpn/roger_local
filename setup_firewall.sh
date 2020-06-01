@@ -9,14 +9,17 @@ echo -e "\n\nsetting up firewall rules\n\n"
 
 sudo ufw enable
 
+### disable IPv6
+sed -i 's/IPV6=yes/IPV6=no/g' /etc/default/ufw
+
 ### set default policy
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 
 ### allow necessary ports: FTP (20, 21), SMTP(25), DNS (53), HTTP (80),
 ### HTTPS (443), custom SSH ($ssh_port)
-sudo ufw allow from any to any proto tcp 80,443,$ssh_port
-sudo ufw limit from any to any 80,443,$ssh_port
+sudo ufw allow 80,443,$ssh_port/tcp
+sudo ufw limit 80,443,$ssh_port/tcp
 
 sudo ufw reload
 
