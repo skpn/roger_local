@@ -5,7 +5,7 @@
 
 ssh_port=$1
 
-echo -e "\n\nsetting up firewall rules (ssh port: $ssh_port)\n\n"
+echo -e "\n\nsetting up firewall rules\n\n"
 
 sudo ufw enable
 
@@ -27,6 +27,9 @@ sudo ufw limit 443/tcp
 sudo ufw limit $ssh_port/tcp
 
 sudo ufw reload
+
+### closing ports that stay open on nmap
+sudo iptables -I raw -t PREROUTING -p tcp --dport 25,110,119,143,465,563,587,993,995 -j DROP
 
 ### create custom configuration file for fail2ban
 

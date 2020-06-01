@@ -66,7 +66,6 @@ launch_subscript setup_ssh.sh $setup_source
 
 launch_subscript setup_network.sh
 
-echo "lauching firewall with ssh port: $ssh_port"
 launch_subscript setup_firewall.sh $ssh_port
 
 launch_subscript setup_services.sh

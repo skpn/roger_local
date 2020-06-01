@@ -14,7 +14,7 @@ echo -e "apt -y upgrade >> $update_log" >> $update_script
 
 ###
 echo -e "setting system crontab to run update script at boot and 4AM"
-echo -e "0 4 * * *		root	bash $update_script" >> /etc/crontab
+echo -e "0 4 * * 6		root	bash $update_script" >> /etc/crontab
 echo -e "@reboot		root	bash $update_script" >> /etc/crontab
 
 
