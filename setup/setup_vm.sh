@@ -1,5 +1,5 @@
 
-repo="https://raw.githubusercontent.com/skpn/roger_local/master/"
+repo="https://raw.githubusercontent.com/skpn/roger_local/master/setup/"
 
 function get_file() {
 	rm -f $(find . -type f -name "$1")

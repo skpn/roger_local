@@ -12,7 +12,7 @@ echo -e "\n\ndisabling unused services\n\n"
 # bluetooth is a short distance wireless data transfer protocol, not used by a
 # server
 
-echo -e "disabling console-setup, keyboard-setup, and bluetooth"
+echo -e "disabling apache services, bluetooth, and console and keyboard setup\n"
 
 service apache-htcacheclean stop
 service apache2 stop

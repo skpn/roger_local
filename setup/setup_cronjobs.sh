@@ -6,6 +6,8 @@
 update_script="/root/update_script.sh"
 update_log="/var/log/update_script.log"
 
+echo -e "\n\nsetting up automated update and crontab surveillance\n\n"
+
 ###
 echo -ne "creating apt source update logging script (script: $update_script, "\
 	"log file: $update_log)"
